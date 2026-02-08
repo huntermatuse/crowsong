@@ -1,0 +1,16 @@
+﻿syntax = "proto3";
+
+package canary.views.grpc.common;
+
+// core response status
+message ApiCallStatus
+{
+  ApiCallStatusType status_type = 1;
+  string status_error_message = 2;
+}
+
+enum ApiCallStatusType {
+  SUCCESS = 0;
+  NO_LICENSE = 1;
+  CHECK_EXTENDED_STATUS = 2;
+}

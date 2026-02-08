@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package canary.calculations.batch.grpc.common;
+
+message GetBatchEventTypesRequest {}
+message GetBatchEventTypesResponse {}
+
+message GetBatchEventMetadataFilterKeysRequest {}
+message GetBatchEventMetadataFilterKeysResponse {}
+
+message GetBatchEventMetadataFilterValueSetRequest {}
+message GetBatchEventMetadataFilterValueSetResponse {}
+
+message GetBatchEventsRequest {}
+message GetBatchEventsResponse {}
+
+message GetBatchEventAssetContextRequest {}
+message GetBatchEventAssetContextResponse {}

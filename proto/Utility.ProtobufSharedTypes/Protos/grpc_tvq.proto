@@ -1,0 +1,12 @@
+﻿syntax = "proto3";
+
+package canary.utility.protobuf_shared_types;
+
+import "google/protobuf/timestamp.proto";
+import "Utility.ProtobufSharedTypes/Protos/variant.proto";
+
+message GrpcTvq {
+  google.protobuf.Timestamp timestamp = 1;
+  Variant value = 2;
+  uint32 quality = 3;
+}

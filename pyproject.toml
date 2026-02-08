@@ -1,0 +1,20 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "crowsong"
+version = "0.1.0"
+description = "Python client library for Canary Views gRPC API (powered by Rust)"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [
+    { name = "hunter matuse" }
+]
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[tool.maturin]
+features = ["extension-module"]

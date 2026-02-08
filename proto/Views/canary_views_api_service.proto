@@ -1,0 +1,1706 @@
+/**
+* gRPC API used to make calls to the Views Service.
+*/
+syntax = "proto3";
+
+option csharp_namespace = "Canary.Views.Grpc.Api";
+package canary.views.grpc.api;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/duration.proto";
+
+import "Utility.ProtobufSharedTypes/Protos/grpc_tvq.proto";
+import "Utility.ProtobufSharedTypes/Protos/variant.proto";
+import "Calculations.Grpc.Common/Protos/canary_calculations_common.proto";
+import "Views.Grpc.Common/Protos/canary_views_common.proto";
+import "Calculations.Batch.Grpc.Common/Protos/canary_calculations_batch_common.proto";
+
+///  Service for handling the API calls made to the Views service. 
+service CanaryViewsApiService {
+  /// Test the gRPC connection.
+  rpc Test (google.protobuf.Empty) returns (google.protobuf.Empty);
+  /// Get the current version of the service.
+  rpc GetWebServiceVersion (google.protobuf.Empty) returns (GetWebServiceVersionResponse);
+  /// Get the current version of the interface.
+  rpc GetWebServiceInterfaceVersion (google.protobuf.Empty) returns (GetWebServiceInterfaceVersionResponse);
+  /// Create a new client connection ID.
+  rpc GetClientConnectionId (GetClientConnectionIdRequest) returns (GetClientConnectionIdResponse);
+  /// Release the client connection ID. This does not affect the views connection. 
+  rpc ReleaseClientConnectionId (ReleaseClientConnectionIdRequest) returns (ReleaseClientConnectionIdResponse);
+  /// Keep alive the specified client connection ID. 
+  rpc KeepaliveClientConnectionId (KeepaliveClientConnectionIdRequest) returns (KeepaliveClientConnectionIdResponse);
+  /// Set the Virtual Time Extension Flag for returning time extended values.
+  rpc SetVirtualTimeExtensionFlag (SetVirtualTimeExtensionFlagRequest) returns (SetVirtualTimeExtensionFlagResponse);
+  /// Get a list of the views.
+  rpc GetViews (GetViewsRequest) returns (GetViewsResponse);
+  /// Gets information about a specific Dataset.
+  rpc GetDatasetInfo (GetDatasetInfoRequest) returns (GetDatasetInfoResponse);
+  /// Get a list of the Datasets for a specific view.
+  rpc GetDataSetList (GetDataSetListRequest) returns (GetDataSetListResponse);
+  /// Get a list of the tags for a specified dataset.
+  rpc GetTagList (GetTagListRequest) returns (GetTagListResponse);
+  /// Get information for the specified tags.
+  rpc GetTagInfo (GetTagInfoRequest) returns (GetTagInfoResponse);
+  /// Get the context for the selected tags.
+  rpc GetTagDataContext (GetTagDataContextRequest) returns (GetTagDataContextResponse);
+  /// Get the current value of the selected tags.
+  rpc GetTagCurrentValue (GetTagCurrentValueRequest) returns (GetTagCurrentValueResponse);
+  /// Get the annotations for the selected tags.
+  rpc GetAnnotations (GetAnnotationsRequest) returns (GetAnnotationsResponse);
+  /// Get the information of all views.
+  rpc GetViewInfo (GetViewInfoRequest) returns (GetViewInfoResponse);
+  /// Get information of a specific view.
+  rpc GetViewInfoSingle (GetViewInfoSingleRequest) returns (GetViewInfoSingleResponse);
+
+  /// Get the raw data of selected tags for the specified time frame.
+  rpc GetRawData (GetRawDataRequest) returns (GetRawDataResponse);
+
+  /// Get the aggregated data of a selected tag.
+  rpc GetAggregateData(GetAggregateDataRequest) returns (GetAggregateDataResponse);
+  /// Get the statistics of a specified tag.
+  rpc GetTagStatistics (GetTagStatisticsRequest) returns (GetTagStatisticsResponse);
+  /// Get the readable version of the selected quality.
+  rpc GetReadableQuality (GetReadableQualityRequest) returns (GetReadableQualityResponse);
+  /// Get a list of the aggregates.
+  rpc GetAggregateList (google.protobuf.Empty) returns (GetAggregateListResponse);
+
+  /// Subscribe to tags in order to get the latest data.
+  rpc SubscribeToLiveData (SubscribeToLiveDataRequest) returns (stream SubscribeToLiveDataResponse);
+  /// Save an annotation to a tag.
+  rpc StoreAnnotation (StoreAnnotationRequest) returns (StoreAnnotationResponse);
+  /// exclude-from-docs Connect to Axiom and handle requests from Axiom.
+  rpc AxiomInternal (AxiomInternalRequest) returns (AxiomInternalResponse);
+  /// Browse Views using the node ID for a node
+  rpc Browse (BrowseRequest) returns (BrowseResponse);
+  /// Browse views for nodes that match the conditions passed in
+  rpc BrowseAutoComplete (BrowseAutoCompleteRequest) returns (BrowseAutoCompleteResponse);
+  /// Browse the tags of a specified node.
+  rpc BrowseTags (BrowseTagsRequest) returns (BrowseTagsResponse);
+  /// Search for any tags that meet the specific criteria.
+  rpc SearchTags (SearchTagsRequest) returns (SearchTagsResponse);
+  /// Browse tags based off a specific path.
+  rpc BrowsePath (BrowsePathRequest) returns (BrowsePathResponse);
+  
+  /// Get the Model views.
+  rpc GetModelViews (google.protobuf.Empty) returns (GetModelViewsResponse);
+
+  /// Get the types of a Model.
+  rpc GetModelTypes (GetModelTypesRequest) returns (GetModelTypesResponse);
+  /// Get the type tags for the model.
+  rpc GetModelTypeTags (GetModelTypeTagsRequest) returns (GetModelTypeTagsResponse);
+  /// Get all model instances.
+  rpc GetModelInstances (GetModelInstancesRequest) returns (GetModelInstancesResponse);
+  /// Get all the events from the Calculations service that meet the specified search criteria.
+  rpc FindEvents (FindEventsRequest) returns (FindEventsResponse);
+  /// Get the names of the events from the Calculations service.
+  rpc GetEventCalculationNames (GetEventCalculationNamesRequest) returns (GetEventCalculationNamesResponse);
+  /// Get the names of the event properties from the Calculations service.
+  rpc GetEventPropertyNames (GetEventPropertyNamesRequest) returns (GetEventPropertyNamesResponse);
+  /// Search for any events within a specified window with the specified event information.
+  rpc SearchForEvents (SearchForEventsRequest) returns (SearchForEventsResponse);
+  /// Get the endpoints used to communicate with the Identity service.
+  rpc GetIdentityEndpoints (GetIdentityEndpointsRequest) returns (GetIdentityEndpointsResponse);
+  /// Parse a string version of a timestamp into a timestamp object.
+  rpc ParseTimestamp (ParseTimestampRequest) returns (ParseTimestampResponse);
+  /// Parse the interval string into a duration object. 
+  rpc ParseInterval (ParseIntervalRequest) returns (ParseIntervalResponse);
+  /// Get the name of the host machine.
+  rpc GetHostName (GetHostNameRequest) returns (GetHostNameResponse);
+
+  /// Get the types of batch events.
+  rpc GetBatchEventTypes (canary.calculations.batch.grpc.common.GetBatchEventTypesRequest) returns (canary.calculations.batch.grpc.common.GetBatchEventTypesResponse);
+  /// Get the superset of metadata filter keys against the batch event types that match the given filter criteria.
+  rpc GetBatchEventMetadataFilterKeys (canary.calculations.batch.grpc.common.GetBatchEventMetadataFilterKeysRequest) returns (canary.calculations.batch.grpc.common.GetBatchEventMetadataFilterKeysResponse);
+  /// Get a superset of the metadata value sets against the given event types for a metadata key.
+  rpc GetBatchEventMetadataFilterValueSet (canary.calculations.batch.grpc.common.GetBatchEventMetadataFilterValueSetRequest) returns (canary.calculations.batch.grpc.common.GetBatchEventMetadataFilterValueSetResponse);
+  /// Get batch events that match the given filter criteria.
+  rpc GetBatchEvents (canary.calculations.batch.grpc.common.GetBatchEventsRequest) returns (canary.calculations.batch.grpc.common.GetBatchEventsResponse);
+  /// Get the asset context for the given batch event types
+  rpc GetBatchEventAssetContext (canary.calculations.batch.grpc.common.GetBatchEventAssetContextRequest) returns (canary.calculations.batch.grpc.common.GetBatchEventAssetContextResponse);
+}
+
+/**
+* The response from getting the current version of the service.
+*/
+message GetWebServiceVersionResponse {
+   // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1; 
+  // The version of the service.
+  string version = 2; 
+}
+
+/**
+* The response from getting the current version of the interface.
+*/
+message GetWebServiceInterfaceVersionResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The interface version.
+  string version = 2;
+}
+
+/**
+* A request that creates and retrieves the Client ID for the specified user and application.
+*/
+message GetClientConnectionIdRequest {
+  // The name of the application. 
+  string app = 1;
+  // The ID of the user. 
+  string user_id = 2;
+}
+
+/**
+* The response containing the client connection ID and status.
+*/
+message GetClientConnectionIdResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The client connection ID.
+  int32 cci = 2;
+}
+
+/**
+* A request to release the selected client connection ID to close a connection.
+*/
+message ReleaseClientConnectionIdRequest {
+   // The client connection ID to release.
+   int32 cci = 1; 
+}
+
+/**
+* The response from releasing the client connection ID.
+*/
+message ReleaseClientConnectionIdResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+}
+
+/**
+* A request to keep the select client connection alive and working.
+*/
+message KeepaliveClientConnectionIdRequest {
+  // the ID for the client connection to keep alive.
+  int32 cci = 1;
+}
+
+/**
+* The response from attempting to keep alive the specified connection.
+*/
+message KeepaliveClientConnectionIdResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+}
+
+/**
+* A request to set whether or not to use time extension generation for data.
+*/
+message SetVirtualTimeExtensionFlagRequest {
+  // A flag representing whether or not to use time extension.
+  bool flag = 1;
+  // The Client Connection ID of the connection to apply the flag to.
+  int32 cci = 2;
+}
+
+/**
+* The response from setting the virtual Time Extension Flag.
+*/
+message SetVirtualTimeExtensionFlagResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+}
+
+/**
+* A request to get all views.
+*/
+message GetViewsRequest {
+  // The client connection ID associated with the connection.
+  int32 cci = 1;
+}
+
+/**
+* The response containing all the views and the status of the call.
+*/
+message GetViewsResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // All the views the user has access to.
+  repeated string views = 2;
+}
+
+/**
+* @exclude
+* message GetViewInfoRequest {
+*   string view = 1;
+*   int32 cci = 2;
+* }
+*/
+
+/**
+* The response of getting the Dataset info.
+*/
+message GetDatasetInfoResponse {
+  // An enum to cover all statuses that could be returned specific to accessing a dataset.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0; 
+    // The view was not found.
+    VIEW_NOT_FOUND = 1;
+    // There was an error in views attempting to complete the request.
+    VIEWS_ERROR = 2;
+    // Access was denied.
+    ACCESS_DENIED = 3;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The access specific status.
+  Status extended_status = 2;
+  // The property names.
+  repeated string prop_name = 3;
+  // The values of the properties.
+  repeated string prop_value = 4;
+}
+
+/**
+* A request to get the properties of a specific dataset.
+*/
+message GetDatasetInfoRequest {
+  // The view containing the dataset.
+  string view = 1;
+  // The name of the dataset.
+  string dataset_name = 2;
+  // The client connection ID of the current connection.
+  int32 cci = 3;
+}
+
+/**
+* A request to get the datasets associated with a view.
+*/
+message GetDataSetListRequest {
+  // The name of the view to get the datasets for.
+  string view = 1;
+  // A true or false value indicating whether hidden datasets should be included.
+  bool include_hidden = 2;
+  // The client connection ID of the current connection.
+  int32 cci = 3;
+}
+
+/**
+* The response of getting the datasets.
+*/
+message GetDataSetListResponse {
+  // An enum to handle the various statuses that can occur when getting the datasets.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The specified view was not found.
+    VIEW_NOT_FOUND = 1;
+    // The plugin used threw an error.
+    PLUGIN_ERROR = 2;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status returned when trying to access the view. 
+  Status extended_status = 2;
+  // The names of the datasets.
+  repeated string datasets = 3;
+}
+
+/**
+* A request to get the list of tags in the requested dataset.
+*/
+message GetTagListRequest {
+  // The name of the view containing the dataset.
+  string view = 1;
+  // The name of the dataset to get the list for.
+  string dataset_name = 2;
+  // The offset for where to start returning tags from.
+  int32 starting_offset = 3;
+  // The max number of tags to get.
+  int32 max_count = 4;
+  // The client connection ID associated with the connection.
+  int32 cci = 5;
+}
+
+/**
+* The response from getting tag list.
+*/
+message GetTagListResponse {
+  // An enum to handle the various statuses that can occur when getting the tag list.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The view was not found. 
+    VIEW_NOT_FOUND = 1;
+    // Failed to get tag list from plugin.
+    PLUGIN_TAG_LIST_ERROR = 2;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The specific status of accessing the view and dataset.
+  Status extended_status = 2;
+  // flag indicating whether this is all the tags or not.
+  int32 result_flags = 3;
+  // The name of each tag.
+  repeated string tag_names = 4;
+  // The type of tag each tag is.
+  repeated int32 tag_types = 5;
+  // The number of tags to skip getting.
+  int32 starting_offset = 6;
+}
+
+/**
+* A request to get the information for the specified tags.                               
+*/
+message GetTagInfoRequest {
+  // The view containing the tags.
+  string view = 1;
+  // The names of the tags to get the information of.
+  repeated string tag_names = 2;
+  // The client connection ID associated with the connection.
+  int32 cci = 3;
+}
+
+/**
+* The response from getting the tag information.
+*/
+message GetTagInfoResponse {
+  // An enum containing the status of accessing the view.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The view was not found.
+    VIEW_NOT_FOUND = 1;
+  }	
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The specific status returned for accessing the view associated with the tags.
+  Status extended_status = 2;
+  // The tag information for each of the selected tags so long as the user can access them.
+  repeated TagInfo tag_infos = 3;
+}
+
+/**
+* The information for each tag.
+*/
+message TagInfo {
+  // The ID of the tag item.
+  string tag_item_id = 1;
+  // The type of tag item. 
+  int32 item_type = 2;
+  // Any flags associated with the tag item.
+  uint32 flags = 3;
+  // All the properties of the tag item.
+  repeated TagProp tag_properties = 4;
+}
+
+/**
+* The property of the tag and information regarding the property.
+*/
+message TagProp {
+  // The name of the property.
+  string prop_name = 1;
+  // The index of the property.
+  int32 prop_index = 2;
+  // The description of the property.
+  string prop_description = 3;
+  // The value of the property.
+  string prop_value = 4;
+  // The data type of the property.
+  string data_type = 5;
+}
+
+/**
+* A request to get the context of each tag.
+*/
+message GetTagDataContextRequest {
+  // The view containing the tags.
+  string view = 1;
+  // The tag names to get the context of.
+  repeated string tag_names = 2;
+  // The client connection ID associated with the connection.
+  int32 cci = 3;
+}
+
+/**
+* The response from getting the tag data contexts.
+*/
+message GetTagDataContextResponse {
+  // An enum containing the status of accessing the view.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The specified view was not found.
+    VIEW_NOT_FOUND = 1;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of accessing the view to get the tag context.
+  Status extended_status = 2;
+  // The context data of each tag.
+  repeated TagDataContext contexts = 3;
+}
+
+/**
+* The tag data context. 
+*/
+message TagDataContext {
+  // The ID of the tag item.
+  string tag_item_id = 1;
+  // The oldest timestamp of the tag.
+  google.protobuf.Timestamp oldest_timestamp = 2;
+  // The most recent timestamp of the tag.
+  google.protobuf.Timestamp latest_timestamp = 3;
+  // The data type of the most recent value.
+  string latest_value_data_type = 4;
+  // The most recent value.
+  string latest_value = 5;
+  // The most recent quality.
+  uint32 latest_quailty = 6;
+}
+
+/**
+* A request to get the current vale of the selected tags.
+*/
+message GetTagCurrentValueRequest {
+  // An enum for the qualities a a tag can have as part of the TVQ when filtering.
+  enum Quality {
+    // Any quality value can be used.
+    ANY = 0;
+    // A quality that is not bad.
+    NON_BAD = 1;
+    // A quality of good.
+    GOOD = 2;
+  }
+  // The view containing the tags.
+  string view = 1;
+  // The names of the tags.
+  repeated string tag_names = 2;
+  // Whether or not time extension should be used.
+  google.protobuf.BoolValue use_time_extension = 3;
+  // The quality of the value to be used as a filter.
+  Quality quality = 4;
+  // The client connection ID associated with the connection.
+  int32 cci = 5;
+}
+
+/**
+* The response from getting the current value of tags.
+*/
+message GetTagCurrentValueResponse {
+  // An enum containing the status of accessing the view.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The specified view was not found.
+    VIEW_NOT_FOUND = 1;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of accessing the view to get the current values of tags.
+  Status extended_status = 2;
+  // The current value for each tag passed in that the user has access to.
+  repeated TagCurrentValue tag_values = 3;
+}
+
+/**
+* The current tag value. 
+*/
+message TagCurrentValue {
+  // The ID of the tag item.
+  string tag_item_id = 1;
+  // The timestamp for the value.
+  google.protobuf.Timestamp timestamp = 2;
+  // The value of the tag.
+  canary.utility.protobuf_shared_types.Variant value = 3;
+  // The quality of the value as a number.
+  int32 quality = 4;
+}
+
+/**
+* A request to get the raw data of the selected tags for the selected time frame.
+*/
+message GetRawDataRequest {
+  // The view containing the tags.
+  string view = 1;
+  // The tags to get along with the time frame.
+  repeated RawTagRequest requests = 2;
+  // The max count of data per tag.
+  int32 max_count_per_tag = 3;
+  // Whether or not to include bounding values.
+  bool return_bounds = 4;
+  // Whether or not to return the annotations.
+  bool return_annotations = 5;
+  // The client connection ID associated with the connection.
+  int32 cci = 6;
+}
+
+/**
+* A request used by GetRawDataRequest in order to get the right data points.
+*/
+message RawTagRequest {
+  // The name of the tag.
+  string tag_name = 1;
+  // The start time of the range to get raw data for. 
+  google.protobuf.Timestamp start_time = 2;
+  // The end time of the range to get raw data for. 
+  google.protobuf.Timestamp end_time = 3;
+  // The client data represented as a number.
+  int32 client_data = 4;
+  // The continuation point for the data.
+  bytes continuation_point = 5;
+}
+
+/**
+* The response of getting the raw data.
+*/
+message GetRawDataResponse {
+  // An enum detailing statuses regarding to accessing the view and the tags.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // There were no tags listed in the request. 
+    NO_TAGS_IN_REQUEST = 1;
+    // The view containing the tags could not be found.
+    VIEW_NOT_FOUND = 2;
+    // There were too many tags requested.
+    TOO_MANY_TAGS = 3;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of trying to get the raw data.
+  Status extended_status = 2;
+  reserved 3;
+  // The raw data for each tag.
+  repeated RawTagData raw_data = 4;
+}
+
+/**
+* The raw tag data.
+*/
+message RawTagData {
+  // The name of the tag.
+  string tag_name = 1;
+  // The client data.
+  int32 client_data = 2;
+  // Flags relating to the results.
+  int32 result_flags = 3;
+  // The error message if any errors occurred.
+  string error_message = 4;
+  // The error code if any errors occurred. 
+  int32 error_code = 5;
+  // The TVQs for the tag.
+  repeated canary.utility.protobuf_shared_types.GrpcTvq tvqs = 6;
+  // The annotations for the tag.
+  repeated Annotation annotations = 7;
+  // The continuation point. 
+  bytes continuation_point = 8;
+}
+
+/**
+* The annotation for the raw data.
+*/
+message Annotation {
+  // The timestamp. 
+  google.protobuf.Timestamp timestamp = 1;
+  // Whether or not the annotation is marked as deleted.
+  bool is_deleted = 2;
+  // the entries of the annotation.
+  repeated AnnotationEntry entries = 3;
+}
+
+/**
+* The annotation for a tag. 
+*/
+message AnnotationTag{
+  // The ID of the tag.
+  string tag_id = 1;
+  // The timestamp.
+  google.protobuf.Timestamp timestamp = 2;
+  // The annotations on the tag.
+  repeated AnnotationEntry entries = 3;
+}
+
+/**
+* The entry for an annotation which is the data of the annotation.
+*/
+message AnnotationEntry {
+  // The time stamp of the annotation.
+  google.protobuf.Timestamp entry_time = 1;
+  // The user who created the annotation.
+  string user = 2;
+  // The message of the annotation.
+  string message = 3;
+}
+
+/**
+* A request to get the annotations for the selected tags. 
+*/
+message GetAnnotationsRequest{
+  // The server where the annotations are. 
+  string server = 1;
+  // The ids of the tags to get the annotations for. 
+  repeated string tag_ids = 2;
+  // The start time for the time range to get annotations for. 
+  google.protobuf.Timestamp start_time = 3;
+  // The end time for the time range to get annotations for. 
+  google.protobuf.Timestamp end_time = 4;
+}
+
+/**
+* The response from getting the annotations.
+*/
+message GetAnnotationsResponse{
+  // The status of trying to access the view in order to get annotations.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The view was not found.
+    VIEW_NOT_FOUND = 1;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The specific status of accessing the view to get annotations.
+  Status extended_status = 2;
+  // The annotations for the selected tags. 
+  repeated AnnotationTag annotations = 3;
+}
+
+/**
+* A request to get the aggregate data for the selected tags. 
+*/
+message GetAggregateDataRequest {
+  // The view containing the tags. 
+  string view = 1;
+  // Requests to get aggregate data. 
+  repeated AggregateTagRequest requests = 2;
+  // The start time of the range to get data for. 
+  google.protobuf.Timestamp start_time = 3;
+  // The end time of the range to get data for. 
+  google.protobuf.Timestamp end_time = 4;
+  // The interval to process the raw data in. 
+  google.protobuf.Duration interval = 5;
+  // Whether annotations should be returned or not. 
+  bool return_annotations = 6;
+  // The client connection ID associated with the connection.
+  int32 cci = 7;
+}
+
+/**
+* A request used by GetAggregateDataRequest to specify the details of an aggregate for a tag. 
+*/
+message AggregateTagRequest {
+  // The name of the tag to get aggregate data for. 
+  string tag_name = 1;
+  // The name of the aggregate function to use to get the data. 
+  string aggregate_name = 2;
+  // The configuration of the aggregate on how to handle the different qualities. 
+  AggregateConfiguration aggregate_configuration = 3;
+  // Whether the data will be using sloped extrapolation or not.
+  bool sloped = 4;
+  // The client data.
+  int32 client_data = 5;
+}
+
+/**
+* The aggregate configuration detailing how to handle value types and extrapolation.
+*/
+message AggregateConfiguration {
+  // Whether or not data with a quality of uncertain should be treated the same as data with a quality of bad.
+  bool treat_uncertain_as_bad = 1;
+  // The threshold for determining if the aggregate was bad.
+  int32 percent_data_bad = 2;
+  // The threshold for determining if the aggregate was good.
+  int32 percent_data_good = 3;
+  // Whether to use sloped extrapolation to get data. 
+  bool use_sloped_extrapolation = 4;
+}
+
+/**
+* The response of getting the aggregate data. 
+*/
+message GetAggregateDataResponse {
+  // An enum for the status of accessing the view and tags in order to get the aggregate data. 
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // There were no tags in the request.
+    NO_TAGS_IN_REQUEST = 1;
+    // The view was not found.
+    VIEW_NOT_FOUND = 2;
+    // There were too many tags in the request.
+    TOO_MANY_TAGS = 3;
+    // The response would return too many values.
+    TOO_MANY_VALUES = 4;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of trying to access and work with the data. 
+  Status extended_status = 2;
+  reserved 3;
+  // The aggregate data for the tags.
+  repeated AggregateTagData aggregated_data = 4;
+}
+
+/**
+* The aggregate data for a specific tag.
+*/
+message AggregateTagData {
+  // The name of the tag.
+  string tag_name = 1;
+  // The client data.
+  int32 client_data = 2;
+  // The error message if an error occurred.
+  string error_message = 3;
+  // The error code if an error occurred.
+  int32 error_code = 4;
+  // The TVQs of the tag with the aggregate applied.
+  repeated canary.utility.protobuf_shared_types.GrpcTvq tvqs = 5;
+  // Any annotations for the tag. 
+  repeated Annotation annotations = 6;
+}
+
+/**
+* A request to get the readable or string version of the quality.
+*/
+message GetReadableQualityRequest {
+  // The numeric value of the quality.
+  google.protobuf.Int32Value quality = 1;
+}
+
+/**
+* The response from getting the readable version of a quality.
+*/
+message GetReadableQualityResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The quality as a string such as good or bad. 
+  string readable_quality = 2;
+}
+
+/**
+* A request to get the statistics for a tag. 
+*/
+message GetTagStatisticsRequest {
+  // The name of the view.
+  string view_name = 1;
+  // The ID of the selected tag.
+  string tag_id = 2;
+  // The start time for the time range.
+  google.protobuf.Timestamp start_time = 3;
+  // The end time for the time range.
+  google.protobuf.Timestamp end_time = 4;
+  // The interval to return data in. 
+  google.protobuf.Duration interval = 5;
+  //The name of the aggregate to use.
+  string aggregate_name = 6;
+  // Whether to include the standard deviation or not.
+  bool include_std_dev = 7;
+  // Whether or not to use percentiles. 
+  bool include_percentiles = 8;
+  // The client connection ID associated with the connection.
+  int32 cci = 9;
+}
+
+/**
+* The response of getting the statistics for a specific tag. 
+*/
+message GetTagStatisticsResponse {
+  //  An enum for the status of accessing the view.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The view was not found.
+    VIEW_NOT_FOUND = 1;
+  }
+  // The status of the call
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of accessing the view to get the statistics. 
+  Status extended_status = 2;
+  // The number of values sampled.
+  int32 total_samples = 3;
+  // The number of values that were valid after any filtering. 
+  int32 valid_samples = 4;
+  // The sum of the values.
+  double sum = 5;
+  // The average value. 
+  double mean = 6;
+  // The lowest value.
+  double minimum = 7;
+  // The highest value.
+  double maximum = 8;
+  // The standard deviation.
+  double standard_dev = 9;
+  // The 25th percentile.
+  double percent_25 = 10;
+  // The 50th percentile or median value. 
+  double percent_50 = 11;
+  // The 75th percentile.
+  double percent_75 = 12;
+}
+
+/**
+* The response from getting a list of the Aggregates. 
+*/
+message GetAggregateListResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The definitions of each aggregate that can be used.
+  repeated AggregateDefinition aggregates = 2;
+}
+
+/**
+* The definitions of each aggregate that is supported.
+*/
+message AggregateDefinition {
+  // The name of the aggregate.
+  string aggregate_name = 1;
+  // The description of the aggregate.
+  string aggregate_description = 2;
+}
+
+/**
+* @exclude
+* message HistorianCommandRequest {
+*   string server = 1;
+*   string cmd = 2;
+*   int32 cci = 3;
+* }
+*/
+
+/**
+* A request used to subscribe to live data in order to get the data when updated. 
+*/
+message SubscribeToLiveDataRequest {
+  // The client connection ID associated with the connection.
+  int32 cci = 1;
+  // The views paths to browse for tags and then subscribe.
+  repeated SubscriptionBrowsePath browse_paths = 2;
+  // The tags that include the view to subscribe to.
+  repeated string tags = 3;
+  //Whether or not to only return the latest value. This is more efficient when true, but could miss values in the middle of the reporting interval.
+  bool is_lastest_value_only = 4;
+  // Whether or not to enable time extension. If true, then values are virtually time extended during each reporting interval call, regardless of whether the values or timestamp changed.
+  bool is_virtual_time_extension_enabled = 5;
+  // Whether or not to compress the data. If false and the service has compression enabled, disables compression for returned values (may be faster).
+  bool is_compression_enabled = 6;
+  // Whether or not to return annotations.
+  bool is_annotations_enabled = 7;
+  // Whether or not to use tag aliasing. If true, aliases are returned on the first message sent and subsequent messages use the aliases for smaller payloads.
+  bool is_tag_aliasing_enabled = 8;
+  // The interval to return data in.
+  google.protobuf.Duration reporting_interval = 9;
+  // Normalization behavior for the tag paths returned in response messages.
+  TagPathNormalizationBehavior tag_path_normalization_behavior = 10;
+
+  enum TagPathNormalizationBehavior {
+      TAG_PATH_NORMALIZATION_BEHAVIOR_UNSPECIFIED = 0;
+      TAG_PATH_NORMALIZATION_BEHAVIOR_NORMALIZE_VIEW_NAME = 1;
+      TAG_PATH_NORMALIZATION_BEHAVIOR_NO_NORMALIZATION = 2;
+  }
+}
+
+/**
+* The response of subscribing to the live data. 
+*/
+message SubscribeToLiveDataResponse {
+  // An enum with the statuses of trying to access the tags. 
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // There were no tags in the request.
+    NO_TAGS_IN_REQUEST = 1;
+    // An error occurred when retrieving the data.
+    RETRIEVAL_ERROR = 2;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of accessing the tags in order to subscribe.
+  Status extended_status = 2;
+  // The map of browse path and error for browse paths that return an error.
+  map<string, string> browse_errors = 3;
+  // The map of tags and errors for tags that don't succeed.
+  map<string, string> tag_errors = 4;
+  // The map of tag name to aliases if tag aliasing was set to true in the request. It is Only specified on first message. Otherwise empty.
+  map<string, int32> tag_aliases = 5;
+  // The map of tag names and their values if tag aliasing was set to false in the request. Otherwise empty.
+  map<string, TvqsAndAnnotations> tags_and_data = 6;
+  // The map of tag aliases and their values if tag aliasing was set to true in the request. Otherwise empty.
+  map<int32, TvqsAndAnnotations> aliases_and_data = 7;
+}
+
+/**
+* The path for browsing to find what to subscribe too.
+*/
+message SubscriptionBrowsePath {
+  // The path to browse.
+  string browse_path = 1;
+  // Whether or not to include subnodes when browsing.
+  bool deep = 2;
+}
+
+/**
+* TVQs and their annotations. 
+*/
+message TvqsAndAnnotations {
+  // The TVQs.
+  repeated canary.utility.protobuf_shared_types.GrpcTvq tvqs = 3;
+  // The annotations for each TVQ.
+  repeated Annotation annotations = 4;
+}
+
+/**
+* A request to store history data.
+*/
+message StoreHistoryDataRequest {
+  // The name of the view to access.
+  string view_name = 1;
+  // The requests for each piece of data.
+  repeated StoreDataRequest requests = 2;
+  // The client connection ID associated with the connection.
+  int32 cci = 3;
+}
+
+/**
+* The request of the data to store used by StoreHistoryDataRequest.
+*/
+message StoreDataRequest {
+  // The dataset name.
+  string data_set = 1;
+  // The tag name.
+  string tag_name = 2;
+  // The client data.
+  int32 client_data = 3;
+  // Whether or not to create the tag if it is not found.
+  bool create_if_tag_not_found = 4;
+  // Timestamp for the new data 
+  google.protobuf.Timestamp common_property_timestamp = 5;
+  // The map of the properties with their values.
+  map<string, canary.utility.protobuf_shared_types.Variant> properties = 6;
+  // Whether or not to handle data that is entered out of order.
+  bool handle_out_of_order_data = 7;
+  // The TVQs for the tag.
+  repeated canary.utility.protobuf_shared_types.GrpcTvq tvqs = 8;
+  // The user changing the data.
+  string who_is_changing_data = 9;
+  // The reason behind the change.
+  string reason_for_the_data_change = 10;
+  // Timestamp for where to start deleting TVQs.
+  google.protobuf.Timestamp delete_all_tvqs_from = 11;
+  // Timestamp for where to end deleting TVQs.
+  google.protobuf.Timestamp delete_all_tvqs_up_to = 12;
+}
+
+/**
+* The response from storing history data containing statuses and the result. 
+*/
+message StoreHistoryDataResponse {
+  // An enum for the status of accessing the view.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The view was not found.
+    VIEW_NOT_FOUND = 1;
+    // The type of view was invalid for this action.
+    INVALID_VIEW_TYPE = 2;
+  }
+  // The status of the call
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of accessing the view to store history data. 
+  Status extended_status = 2;
+  // The results of storing the data.
+  repeated StoreDataResult results = 3;
+}
+
+/**
+* The result of storing the history data for a tag.
+*/
+message StoreDataResult {
+  // The client data.
+  int32 client_data = 1;
+  // The error message if an error occurred.  
+  string error_message = 2;
+}
+
+/**
+* A request to store an annotation.
+*/
+message StoreAnnotationRequest {
+  // The name of the view. 
+  string view_name = 1;
+  // The client connection ID associated with the connection.
+  int32 cci = 2;
+  // The annotation to store and information related to it.
+  StoreAnnotationRequestItem annotation = 3;
+}
+
+/**
+* A request used by StoreAnnotationRequest to specify the annotation details. 
+*/
+message StoreAnnotationRequestItem {
+  // The prefix of the tag to be annotated.
+  string tag_prefix = 1;
+  // The name of the tag.
+  string tag_name = 2;
+  // The timestamp of the annotation.
+  google.protobuf.Timestamp annotation_time_stamp = 3;
+  // The annotation itself.
+  string annotation_message = 4;
+  // The timestamp of when the annotation is created. This is only needed if it is different than the annotation timestamp.
+  google.protobuf.Timestamp created_at = 5;
+  // The user who created the annotation.
+  string user_id = 6;
+  // Whether or not the annotation should be visible.
+  bool visible = 7;
+}
+
+/**
+* The response of trying to store an annotation.
+*/
+message StoreAnnotationResponse {
+  // An enum of the statuses that could occur when saving an annotation.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The view was not found.
+    VIEW_NOT_FOUND = 1;
+    // The annotation failed to save. 
+    FAILED_TO_STORE_ANNOTATION = 2;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  //The status of saving an annotation.
+  Status extended_status = 2;
+}
+
+/**
+* A request from Axiom to connect to views.
+*/
+message AxiomInternalRequest {
+  // The request in bytes.
+  bytes request = 1;
+  // The client connection ID associated with the connection.
+  int32 cci = 2;
+}
+
+/**
+* The response from Axiom 
+*/
+message AxiomInternalResponse {
+  // The response in bytes.
+  bytes response = 1;
+}
+
+/**
+* A request to browse using the node id to get the specified node 
+*/
+message BrowseRequest {
+  // The node ID for the path to browse. 
+  string node_id_path = 1;
+  // Whether or not to fore reload the views tree.
+  bool force_reload = 2;
+}
+
+/**
+* The response from browse request containing the node belong to the ID. 
+*/
+message BrowseResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The node data that belonged to the ID passed in the request.
+  BrowseNode node = 2;
+}
+
+/**
+* The Node that was browsed to containing information on the parent and child nodes.
+*/
+message BrowseNode {
+  // The error message if any errors occurred.
+  string error_message = 1;
+  // The path to the parent node.
+  string parent_id_path = 2;
+  // The information on all child nodes.
+  repeated BrowseInfo children = 3;
+}
+
+/**
+* The information of each child node returned by the Browse request. 
+*/
+message BrowseInfo {
+  // The ID Path of the node.
+  string id_path = 1;
+  // The text related to the node.
+  string text = 2;
+  // The icon name.
+  string icon_name = 3;
+  // The number of children.
+  int32 num_children = 4;
+  // The number of tags.
+  int32 num_tags = 5;
+}
+
+/**
+* A request to browse a node to find all items that match the clue passed in.
+*/
+message BrowseAutoCompleteRequest {
+  // The node ID path. 
+  string node_id_path = 1;
+  // The clue or condition for what to return.
+  string clue = 2;
+}
+
+
+/**
+* The response of the autocomplete browse containing all potential matches.
+*/
+message BrowseAutoCompleteResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The error message if any occurred.
+  string error_message = 2;
+  // The node ID path of where the options are from.
+  string node_id_path = 3;  
+  // The options for the auto complete that all matched the clue passed in.
+  repeated string options = 4;
+}
+
+/**
+* A request to browse the tags for a certain node.
+*/
+message BrowseTagsRequest {
+  // The node to browse.
+  string node_id_browse = 1;
+  // The search criteria. 
+  string search_context = 2;
+  // The maximum number of tags.
+  int32 max_count = 3;
+  // Whether or not to also browse sub-nodes.
+  bool include_sub_nodes = 4;
+  // Whether or not to include properties. 
+  bool include_properties = 5;
+}
+
+/**
+* The response of browsing the tags. 
+*/
+message BrowseTagsResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The names of the tags returned.
+  repeated string tag_names = 2;
+  // Wether or not there is more data available.
+  bool more_data_available = 3;
+  // The search context for the browse.
+  string search_context = 4;
+}
+
+/**
+* A request to search tags based off inputted criteria in a sql like search.
+*/
+message SearchTagsRequest {
+  // the tag must match and any other criteria.
+  repeated string tag_and = 1;
+  // The tag or the other criteria must match.
+  repeated string tag_or = 2;
+  // The description must match and any other criteria.
+  repeated string description_and = 3;
+  // The description or the other criteria must match.
+  repeated string description_or = 4;
+  // The units must match and any other criteria.
+  repeated string eng_units_and = 5;
+  // The units or the other criteria must match.
+  repeated string eng_units_or = 6;
+  // Whether or not to include properties.
+  bool include_properties = 7;
+}
+
+/**
+* The response from searching for tags.
+*/
+message SearchTagsResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The tags and their properties that matched the search criteria.
+  repeated SearchTags search = 2;
+}
+
+/**
+* The tags that were found to match the search criteria. 
+*/
+message SearchTags {
+  // The tag name.
+  string tag_name = 1;
+  // The properties of the tag.
+  repeated SearchTagProperty  properties = 2;
+  // The property and the property value.
+  message SearchTagProperty {
+    // The name of the property.
+    string property_name = 1;
+    // The value of the property.
+    canary.utility.protobuf_shared_types.Variant property_value = 2;
+  }
+}
+
+/**
+* A request to browse a specific path in the views browse tree.
+*/
+message BrowsePathRequest {
+  // The paths to browse. 
+  repeated string tree_path = 1;
+}
+
+/**
+* The response of browsing a specific views path.
+*/
+message BrowsePathResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The nodes on the path.
+  repeated BrowseNode nodes = 2;
+}
+
+/**
+* The response of getting the model views.
+*/
+message GetModelViewsResponse {
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The model views.
+  repeated string views = 2;
+}
+
+/**
+* A request to get the types of models.
+*/
+message GetModelTypesRequest {
+  // The asset view. 
+  string asset_view = 1;
+  // The parent type. 
+  string parent_type = 2;
+}
+
+/**
+* The response of getting the types of models.
+*/
+message GetModelTypesResponse {
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The model plugin was not available.
+    MODEL_PLUGIN_UNAVAILABLE = 1;
+    // The view was not found.
+    VIEW_NOT_FOUND = 2;
+    // The view was not a model.
+    NON_MODEL_VIEW = 3;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of accessing the views and models.
+  Status extended_status = 2;
+  // The model types within the asset view.
+  repeated string model_types = 3;
+}
+
+/**
+* A request to get the tags in a model.
+*/
+message GetModelTypeTagsRequest {
+  // The asset view.
+  string asset_view = 1;
+  // The asset type.
+  string asset_type = 2;
+  // Whether or not to include sub nodes when browsing to retrieve tags.
+  bool include_sub_nodes = 3;
+}
+
+/**
+* The response for getting the tags in a model.
+*/
+message GetModelTypeTagsResponse {
+  // An enum for the status of accessing views, the model plugin, and browsing tags.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The model plugin was not available.
+    MODEL_PLUGIN_UNAVAILABLE = 1;
+    // The view was not found.
+    VIEW_NOT_FOUND = 2;
+    // The view was not a model.
+    NON_MODEL_VIEW = 3;
+    // Failed to get instances.
+    GET_INSTANCES_FAILED = 4;
+    // Failed to browse tags. 
+    BROWSE_INSTANCE_TAGS_FAILED = 5;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of accessing views, the model plugin, and browsing tags.
+  Status extended_status = 2;
+  // The tags in the model.
+  repeated string tags = 3;
+}
+
+/**
+* A request to get the model instances. 
+*/
+message GetModelInstancesRequest {
+  // The asset view containing the models.
+  string asset_view = 1;
+  // The node path ID of the parent.
+  string parent_node_path_id = 2;
+  // The asset type. 
+  string asset_type = 3;
+  // An expression to filter the models to return.
+  string filter_expression = 4;
+}
+ 
+/**
+* The response of getting the model.
+*/
+message GetModelInstancesResponse {
+  // An enum for the status of accessing the views, models and assets.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The model plugin was not available.
+    MODEL_PLUGIN_UNAVAILABLE = 1;
+    // The view was not found.
+    VIEW_NOT_FOUND = 2;
+    // The view was not a model.
+    NON_MODEL_VIEW = 3;
+    // The asset type was not found.
+    ASSET_TYPE_NOT_FOUND = 4;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of accessing the views, models and assets.
+  Status extended_status = 2;
+  // The model instances that were returned. 
+  repeated string instances = 3;
+}
+
+/**
+* A request to find events meeting a certain criteria. 
+*/
+message FindEventsRequest {
+  // A map containing the search criteria. 
+  map<string, string> search_criteria = 1;
+  // The continuation point.
+  bytes continuation_point = 2;
+}
+
+/**
+* The response of finding the events.
+*/
+message FindEventsResponse {
+  // An enum for the statuses of making a calculations request.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The Calculations request failed.
+    CALCULATIONS_REQUEST_FAILED = 1;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of making a request to the Calculations service.
+  Status extended_status = 2;
+  // The events that matched the search criteria. 
+  repeated canary.calculations.grpc.common.Event events = 3;
+  // The continuation point.
+  bytes continuation_point = 4;
+}
+
+/**
+* An empty request to get the event calculation names.
+*/
+message GetEventCalculationNamesRequest { }
+
+/**
+* The response from getting the event calculation names.
+*/
+message GetEventCalculationNamesResponse {
+   // An enum for the statuses of making a calculations request.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The Calculations request failed.
+    CALCULATIONS_REQUEST_FAILED = 1;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of making a request to the Calculations service.
+  Status extended_status = 2;
+  // The names of the event calculations.
+  repeated string event_calculation_names = 3;
+}
+
+/**
+* An empty request to get the names of the event properties. 
+*/
+message GetEventPropertyNamesRequest { }
+
+/**
+* The response from getting the names of the event properties. 
+*/
+message GetEventPropertyNamesResponse {
+  // An enum for the statuses of making a calculations request.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The Calculations request failed.
+    CALCULATIONS_REQUEST_FAILED = 1;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of making a request to the Calculations service.
+  Status extended_status = 2;
+  // The names of the event properties. 
+  repeated string event_property_names = 3;
+}
+
+/**
+* A request to search for events.
+*/
+message SearchForEventsRequest {
+  // The client connection ID associated with the connection. 
+  int32 cci = 1;
+  // The name of the view.
+  string view_name = 2;
+  // The tag prefix.
+  string tag_prefix = 3;
+  // The type of asset. 
+  string asset_type = 4;
+  // The timestamp for where to start the search.
+  google.protobuf.Timestamp search_from = 5;
+  // The timestamp for where to end the search.
+  google.protobuf.Timestamp search_to = 6;
+  // The expression used to start the event trigger.
+  string start_trigger_expression = 7;
+  // The expression used to end the event trigger.
+  string end_trigger_expression = 8;
+  // The minimum event duration.
+  google.protobuf.Duration min_event_duration = 9;
+  // The max number of events to retrieve.
+  int32 max_number_of_events = 10;
+  // The properties of the event.
+  repeated string event_properties = 11;
+  // The continuation point.
+  bytes continuation_point = 12;
+}
+
+/**
+* The response of the event search. 
+*/
+message SearchForEventsResponse {
+  // An enum for the status of accessing the events.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // There was an unhandled exception.
+    UNHANDLED_EXCEPTION = 1;
+    // There was an error with views. 
+    VIEWS_ERROR = 2;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of the search.
+  Status extended_status = 2;
+  // Whether or not the search is completed.
+  bool is_done = 3;
+  // A percentage representing how much of the search was completed. 
+  double percent_complete = 4;
+  // AdHoc events created by the search.
+  repeated AdHocEvent events = 5;
+  // The continuation point.
+  bytes continuation_point = 6;
+  // The number of slices the data gets broken into.
+  int32 number_of_slices = 7;
+  // The number of expressions that were evaluated.
+  int32 number_of_n_calc_evaluations = 8;
+  // The duration of the request.
+  google.protobuf.Duration elapsed_time = 9;
+  // If is an asset type, the number of asset instances.
+  int32 number_of_instances = 10;
+  // If is an asset type, the current asset instance.
+  int32 current_instance = 11;
+}
+
+/**
+* The details for an AdHoc event returned when searching the events.
+*/
+message AdHocEvent {
+  // The source of the event.
+  string source = 1;
+  // The start time of the event. 
+  google.protobuf.Timestamp starts_at = 2;
+  // The end time of the event.
+  google.protobuf.Timestamp ends_at = 3;
+  // The properties of the event. 
+  repeated AdHocEventProperty properties = 4;
+
+  // The property of an AdHoc event.
+  message AdHocEventProperty {
+    // The name of the property.
+    string property_name = 1;
+    // The value of the property. 
+    canary.utility.protobuf_shared_types.Variant property_value = 2;
+  }
+}
+
+/**
+* An empty request to get the information for all views.
+*/
+message GetViewInfoRequest { }
+
+/**
+* The response containing the information for all views. 
+*/
+message GetViewInfoResponse {
+    // An enum for the status of getting the properties. 
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // There was an issue retrieving the properties for the view.
+    RETRIEVING_VIEW_PROPERTIES = 1;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // Status of reading the properties.
+  Status extended_status = 2;
+  // The information of the views. 
+  repeated ViewInfo views = 3;
+}
+
+/**
+* A request to get the information for a specific view.
+*/
+message GetViewInfoSingleRequest {
+    // The name of the view.
+    string view_name = 1;
+}
+
+/**
+* The response of getting the view information for a specific view.
+*/
+message GetViewInfoSingleResponse {
+    // An enum for the status of accessing the view and the properties. 
+    enum Status {
+        // The status returned was not a known value.
+        UNSPECIFIED = 0;
+        // There was an issue retrieving the properties for the view.
+        RETRIEVING_VIEW_PROPERTIES = 1;
+        // The view was not found.
+        VIEW_NOT_FOUND = 2;
+    }
+    // The status of the call.
+    canary.views.grpc.common.ApiCallStatus status = 1;
+    // The status of accessing the view.
+    Status extended_status = 2;
+    // The information of the view. 
+    ViewInfo view = 3;
+}
+
+/**
+* The information for a view.
+*/
+message ViewInfo {
+  // The name of the view.
+  string view_name = 1;
+  // The type of view.
+  string view_type = 2;
+  // The names of the properties the view has.
+  repeated string prop_name = 3;
+  // The values of the properties.
+  repeated string prop_value = 4;
+}
+
+/**
+* An empty request to get the Identity service endpoints for connection to the Identity service.
+*/
+message GetIdentityEndpointsRequest { }
+
+/**
+* The response from getting the Identity service endpoints for Identity service connections.
+*/
+message GetIdentityEndpointsResponse {
+   // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The API endpoint for the Identity service.
+  string identity_endpoint_api = 3;
+  // The OIDC endpoint for the Identity Service.
+  string identity_endpoint_oidc = 4;
+}
+
+/**
+* A request to parse the timestamp from a string to a google.protobuf.Timestamp.
+*/
+message ParseTimestampRequest {
+  // The timestamp in string format.
+  string timestamp = 1;
+  // The ID for the timezone.
+  optional string time_zone_id = 2;
+}
+
+/**
+* The response from parsing a string timestamp to a google.protobuf.Timestamp.
+*/
+message ParseTimestampResponse {
+  // An enum for the status of trying to parse the string.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The parse failed.
+    PARSE_FAILED = 1;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of the parse.
+  Status extended_status = 2;
+  // The parsed timestamp.
+  google.protobuf.Timestamp timestamp = 3;
+}
+
+/**
+* A request to parse the interval from a string to a google.protobuf.Duration.
+*/
+message ParseIntervalRequest {
+  // The interval in string format.
+  string interval = 1;
+  // The ID for the timezone.
+  optional string time_zone_id = 2;
+}
+
+/**
+* The response from parsing a string interval to a google.protobuf.Duration.
+*/
+message ParseIntervalResponse {
+  // An enum for the status of trying to parse the string.
+  enum Status {
+    // The status returned was not a known value.
+    UNSPECIFIED = 0;
+    // The parse failed.
+    PARSE_FAILED = 1;
+  }
+  // The status of the call.
+  canary.views.grpc.common.ApiCallStatus status = 1;
+  // The status of the parse.
+  Status extended_status = 2;
+  // The parsed interval.
+  google.protobuf.Duration interval = 3;
+}
+
+/**
+ * A request to get the host name.
+ */
+message GetHostNameRequest { }
+
+/**
+* The response of getting the host name. 
+*/
+message GetHostNameResponse {
+    // The status of the call.
+    canary.views.grpc.common.ApiCallStatus status = 1;
+    // The host name.
+    string host_name = 2;
+}

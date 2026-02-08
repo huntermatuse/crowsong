@@ -1,0 +1,641 @@
+﻿/**
+* gRPC API for making calls to the Store and Forward Service. 
+*/
+syntax = "proto3";
+
+// SOURCE: https://learn.microsoft.com/en-us/aspnet/core/grpc/versioning?view=aspnetcore-7.0
+// NOTE: if breaking changes are ever introduced, a version should be added to the package
+//
+// package canary.store_and_forward2.grpc.api.v2;
+// 
+// this package version number should always increase on a breaking change
+// the server can implement multiple versions of the api for backward compatibility
+
+package canary.store_and_forward2.grpc.api;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+import "Utility.ProtobufSharedTypes/Protos/variant.proto";
+
+
+/// Service for handling the API calls made to Store and Forward service. 
+service CanaryStoreAndForwardApiService {
+  /// Open a new Store and Forward Session.
+  rpc OpenSession (OpenSessionRequest) returns (OpenSessionResponse);
+  /// Configure settings for a session.
+  rpc ConfigureSettings (ConfigureSettingsRequest) returns (ConfigureSettingsResponse);
+  /// Configure tags for use in a session.
+  rpc ConfigureTags (ConfigureTagsRequest) returns (ConfigureTagsResponse);
+  /// Keep a session alive by extending the expiration time. 
+  rpc KeepAlive (KeepAliveRequest) returns (KeepAliveResponse);
+  /// Write stream elements (ie data, annotations, hdb files). 
+  rpc Write (WriteRequest) returns (WriteResponse);
+  /// Close a session.
+  rpc CloseSession (CloseSessionRequest) returns (CloseSessionResponse);
+  /// Get the datasets from the Historian. 
+  rpc GetDatasets (GetDatasetsRequest) returns (GetDatasetsResponse);
+  /// Test the gRPC connection.
+  rpc Test (google.protobuf.Empty) returns (google.protobuf.Empty);
+}
+
+/**
+* exclude-from-docs
+* Version 23 backward compatibility
+*/
+service GrpcApi {
+  /// Version 23 backward compatibility
+  rpc OpenSession (OpenSessionRequest) returns (OpenSessionResponse) { option deprecated = true; };
+  /// Version 23 backward compatibility
+  rpc ConfigureSettings (ConfigureSettingsRequest) returns (ConfigureSettingsResponse) { option deprecated = true; };
+  /// Version 23 backward compatibility
+  rpc ConfigureTags (ConfigureTagsRequest) returns (ConfigureTagsResponse) { option deprecated = true; };
+  /// Version 23 backward compatibility
+  rpc KeepAlive (KeepAliveRequest) returns (KeepAliveResponse) { option deprecated = true; };
+  /// Version 23 backward compatibility
+  rpc Write (WriteRequest) returns (WriteResponse) { option deprecated = true; };
+  /// Version 23 backward compatibility
+  rpc CloseSession (CloseSessionRequest) returns (CloseSessionResponse) { option deprecated = true; };
+  /// Version 23 backward compatibility
+  rpc Test (google.protobuf.Empty) returns (google.protobuf.Empty) { option deprecated = true; };
+}
+
+/*** SHARED ***/
+
+/// A shared enum used to represent the response statuses that can be received.
+enum ResponseStatus {
+  // The status of the call is not a known and expected status
+  RESPONSE_STATUS_UNKNOWN = 0;
+  // The call succeded
+  RESPONSE_STATUS_GOOD = 1;
+  // The call failed and returned a general failure 
+  RESPONSE_STATUS_BAD = 2;
+  // The call failed as there was no session
+  RESPONSE_STATUS_BAD_NO_SESSION = 3;
+  // The call failed with an exception
+  RESPONSE_STATUS_BAD_EXCEPTION = 4;
+  // The call failed as access was denied
+  RESPONSE_STATUS_BAD_ACCESS_DENIED = 5;
+}
+
+/*** OPEN SESSION ***/
+
+/**
+* A session to be opened. If this request succeeds a new sesison will be created. 
+*/
+message OpenSessionRequest {
+  // The name of the session to be created.
+  string name = 1; 
+  // The collector type being used.
+  string collector_type = 2; 
+  // The context which is either a collector context or a sender context.
+  OpenSessionContext context = 3; 
+  // The destination to send the data if none of the configured routes match.
+  google.protobuf.StringValue nullable_destination = 4; 
+  // Code used by third party vendors to specify that the data is coming from their software.
+  string vendor_code = 5; 
+}
+
+/**
+* The context for the session to be opened. This is either a collector context or a sender context. 
+*/
+message OpenSessionContext {
+  oneof context {
+    // The collector context if used.
+    OpenSessionCollectorContext collector_context = 1; 
+    // The sender context if used.
+    OpenSessionSenderContext sender_context = 2; 
+  }
+}
+
+/**
+* A collector context which is used when the session was made by a collector. Contains the API token needed to connect. 
+*/
+message OpenSessionCollectorContext {
+  //The API access token context for the collector context for secure connections.
+  ApiAccessTokenContext secure_access_token_context = 1; 
+}
+
+/**
+* The context of an Api Access Token. This token is used for the different session contexts.
+*/
+message ApiAccessTokenContext {
+  // The api token which is optional.
+  google.protobuf.StringValue nullable_api_access_token = 1; 
+}
+
+/**
+* exclude-from-docs
+* This is for internal use only. The sender context which is used when the session was made by StoreAndForward. 
+*/
+message OpenSessionSenderContext {
+  // API access token context for secure connections.
+  ApiAccessTokenContext secure_access_token_context = 1; 
+  // The hops detailing servers it takes to get from the destination to where the session started.
+  repeated OpenSessionHop hops = 2;  
+}
+
+/**
+* exclude-from-docs
+* This is for internal use only. The context of an Access Token which will be an API access token context.
+*/
+message AccessTokenContext {
+  oneof context {
+    // The API token context, which is the API token or a null string, used for the access token context. 
+    ApiAccessTokenContext api_context = 1; 
+  }
+}
+
+/**
+* exclude-from-docs
+* This is for internal use only. A specific hop or destination the data takes on the way from initial serve to SAF or back. 
+*/
+message OpenSessionHop {
+  // The value of the NodeId setting in the node.json file on the proxy machine.
+  string node_id = 1;  
+  // The host name.
+  string host_name = 2; 
+  // All the ip addresses for the machines that proxy the data
+  repeated string ip_addresses = 3; 
+  // The token for the session.
+  string session_token = 4; 
+  // The third party vendor code for the session.
+  string vendor_code = 5; 
+}
+
+/**
+* The response from Opening a Session.
+*/
+message OpenSessionResponse {
+  // The status of the response.
+  ResponseStatus status = 1; 
+  // The result of opening the session which returns either a token or a string with the error that occured.
+  OpenSessionResult result = 2; 
+}
+
+/**
+* The result of Opening the Session for use by the OpenSessionResponse. Contains either a token or the error that occured.
+*/
+message OpenSessionResult {
+  oneof result {
+    // The token for the session if the request was a success.
+    string session_token = 1; 
+    // The error if opening the session failed.
+    string error = 2; 
+  }
+}
+
+/*** KEEP ALIVE ***/
+
+/**
+* A request used to extend the expiration time of the session.
+*/
+message KeepAliveRequest {
+  // The token for the session. 
+  string session_token = 1; 
+}
+
+/**
+* The response of the keep alive request containing the status and if it failed, any errors. 
+*/
+message KeepAliveResponse {
+  // The status in the form of the Response Status enum. 
+  ResponseStatus status = 1; 
+  // Any errors returned. This field can be null.
+  google.protobuf.StringValue nullable_error = 2; 
+}
+
+/*** CLOSE SESSION ***/
+
+/**
+* A request to close the selected session.
+*/
+message CloseSessionRequest {
+  // The token for the session.
+  string session_token = 1; 
+}
+
+/**
+* The response recived when closing a sesison containing the status and, if failed, the error. 
+*/
+message CloseSessionResponse {
+  // The status in the form of the Response Status enum. 
+  ResponseStatus status = 1; 
+  // The error if the session failed to close. This can be null.
+  google.protobuf.StringValue nullable_error = 2; 
+}
+
+/*** SETTINGS ***/
+
+/**
+* A request to configure the settings for a session. 
+*/
+message ConfigureSettingsRequest {
+  // The token for the session.
+  string session_token = 1; 
+  // Each setting to configure.
+  repeated ConfigureSettingRequest settings = 2; 
+}
+
+/**
+* A request to configure a specific setting.
+*/
+message ConfigureSettingRequest {
+  // The setting kind to be configured.
+  SettingKind kind = 1; 
+  // The value of the setting.
+  canary.utility.protobuf_shared_types.Variant value = 2; 
+}
+
+/**
+* The response from configuring the settings for the session.
+*/
+message ConfigureSettingsResponse {
+  // The status in the form of the Response Status enum. 
+  ResponseStatus status = 1; 
+  // The setting requests and the results for that specific setting.
+  repeated ConfigureSettingPair results = 2; 
+}
+
+/**
+* The setting request and the result for that request. 
+*/
+message ConfigureSettingPair {
+  // The settings request.
+  ConfigureSettingRequest request = 1; 
+  // The response of the setting which can be null or an error depending on success or failure. 
+  ConfigureSettingResult result = 2; 
+}
+
+/**
+* The result of configuring a specific setting. 
+*/
+message ConfigureSettingResult {
+  // The error that occured if the any were thrown. Can be null.
+  google.protobuf.StringValue nullable_error = 1; 
+}
+
+/// An enum used to represent the various kinds of settings for use with the Configure settings requests.
+enum SettingKind {
+  // Setting Kind is not known and is not be valid 
+  SETTING_KIND_UNKNOWN = 0; 
+  // Sets the time until an inactive timeout occurs as a number. 
+  SETTING_KIND_INACTIVE_TIMEOUT_MINUTES = 1;
+  // Sets if datasets should be created as a true/false value.
+  SETTING_KIND_IS_CREATE_DATA_SET_ENABLED = 2;
+  // Sets if data can be inserted or replaced as a true/false value.
+  SETTING_KIND_IS_INSERT_OR_REPLACE_DATA_ENABLED = 3;
+  // Sets if the timestamps can be extended as a true/fase value.
+  SETTING_KIND_IS_TIMESTAMP_EXTENSION_ENABLED = 4;
+  // Sets whether NoData elements should be written to tags when the session is closed as a true/false value.
+  SETTING_KIND_IS_WRITE_NO_DATA_ON_CLOSE_ENABLED = 5;
+  // Sets whether external properties can be written to as a true/false value.
+  SETTING_KIND_IS_EXTERNAL_PROPERTY_STORAGE_ENABLED = 6;
+  // Sets whether to use dynamic datasets or not as a true/false value.
+  SETTING_KIND_IS_DYNAMIC_DATASET_ENABLED = 7;
+  // Sets whether to pause a session from writing to its destination.
+  SETTING_KIND_IS_OUTPUT_PAUSED = 8;
+}
+
+/*** TAGS ***/
+
+/**
+* The tag configuration request for the session.
+*/
+message ConfigureTagsRequest {
+  // The token for the session.
+  string session_token = 1; 
+  // The request for each tag to be configured.
+  repeated ConfigureTagRequest tags = 2; 
+}
+
+/**
+* The tag to be configured.
+*/
+message ConfigureTagRequest {
+  // The path of the tag (data set.tag). 
+  string tag_path = 1; 
+  // Rounds and adjusts timestamp based off the unit of time passed in. Can be null.
+  google.protobuf.Int32Value nullable_timestamp_normalization_milliseconds = 2;
+  // Transforms the data based on the equation passed in. Can be null.
+  google.protobuf.StringValue nullable_transform_equation = 3; 
+  //The deadband, or range a tag can vary until logged, to use for the tag. 
+  ConfigureTagDeadband deadband = 4; 
+  // Indicates whether to extend the timestamp of the last value if it has not changed in the last minute or not. 
+  google.protobuf.BoolValue is_timestamp_extension_enabled = 5; 
+}
+
+/**
+* The deadband type to use for the tag. This will determine what data is logged. 
+*/
+message ConfigureTagDeadband {
+  oneof algorithm {
+    // The deadband to use when a specific value is used to determine if the new data varies enough from the old value for logging. 
+    double delta_absolute = 1; 
+    // The deadband to use when a percentage is used to determine if the new data varries enough from the old value for logging. 
+    double delta_percent = 2; 
+  }
+}
+
+/**
+* The results returned from configuring tags for the session.
+*/
+message ConfigureTagsResponse {
+  // The status in the form of the Response Status enum. 
+  ResponseStatus status = 1; 
+  // Contains the tag request for each tag and the result for that tag.
+  repeated ConfigureTagPair results = 2; 
+}
+
+/**
+* A configured tag pair which is the request for the tag and the result recieved from configuring it. 
+*/
+message ConfigureTagPair {
+  // The configure tag request for the specific tag.
+  ConfigureTagRequest request = 1; 
+  // The result of that request which is either a tag id or an error.
+  ConfigureTagResult result = 2;  
+}
+
+/**
+* The result of configuring a tag. Contains either the tag id or an error. 
+*/
+message ConfigureTagResult {
+  oneof result {
+    // The error if the configuration failed.
+    string error = 1;
+    // The Id of the tag if the request was a success.
+    int32 tag_id = 2; 
+  }
+}
+
+/*** WRITE ***/
+
+/**
+* A request to write elements to a session. These elements can take several forms such as file creation, data writing, and annotations. 
+*/
+message WriteRequest {
+  // The token for the session.
+  string session_token = 1; 
+  // The stream elements which are the type elements to write. 
+  repeated StreamElement elements = 2; 
+}
+
+/**
+* The element to write. Can be one of many different element types. 
+*/
+message StreamElement {
+  oneof kind {
+    // Write data to a tag 
+    DataElement data = 1; 
+    // Write that the value is no data  
+    NoDataElement no_data = 2;
+    // Write a property
+    PropertyElement property = 3; 
+    // Write an annotation
+    AnnotationElement annotation = 4; 
+    // Create and write to a new file 
+    FileNewElement file_new = 5; 
+    // Create a file rollover
+    FileRolloverElement file_rollover = 6; 
+    // Obsolete a tag
+    TagObsoleteElement tag_obsolete = 7;
+    // Unobsolete a tag
+    TagUnobsoleteElement tag_unobsolete = 8; 
+    // Rename a tag
+    TagRenameElement tag_rename = 9; 
+    // Write a data audit
+    DataAuditElement data_audit = 10; 
+    // Release a tag
+    TagReleaseElement tag_release = 11; 
+    // Delete a range of data 
+    DeleteRangeElement delete_range = 12; 
+  }
+}
+
+/**
+* An element with data to be written. 
+*/
+message DataElement {
+  // The ID of the tag the data is for.
+  int32 tag_id = 1; 
+  // The timestamp of when the value occured.
+  google.protobuf.Timestamp timestamp = 2; 
+  // The value of the data. 
+  canary.utility.protobuf_shared_types.Variant value = 3; 
+  // The quality of the data.
+  int32 quality = 4; 
+} 
+
+/**
+* An element with Audit Data to be written.  
+*/
+message DataAuditElement
+{
+  // The ID of the tag the data is for.
+  int32 tag_id = 1; 
+  // The timestamp of when the value occured.
+  google.protobuf.Timestamp timestamp = 2; 
+  // The value of the data.
+  canary.utility.protobuf_shared_types.Variant value = 3; 
+  // The quality of the data.
+  int32 quality = 4; 
+  // The user associated with the action. This can be null. 
+  google.protobuf.StringValue nullable_user = 5; 
+  // The reason for the action. This can be null. 
+  google.protobuf.StringValue nullable_reason = 6; 
+}
+
+/**
+* An element for deleting a range of data.
+*/
+message DeleteRangeElement {
+  // The ID of the tag that is to have a range deleted from it.
+  int32 tag_id = 1; 
+  // The start time of the range.
+  google.protobuf.Timestamp start_time = 2; 
+  // The end time of the range.
+  google.protobuf.Timestamp end_time = 3; 
+}
+
+/**
+* An element that will write a value of NoData
+*/
+message NoDataElement {
+  // The ID of the tag to have a value of NoData written.
+  int32 tag_id = 1; 
+}
+
+/**
+* An element that is a property to be written.
+*/
+message PropertyElement {
+  // The ID of the tag for the property and it's data.
+  int32 tag_id = 1; 
+  // The timestamp the element is written.
+  google.protobuf.Timestamp timestamp = 2; 
+  // The value of the property.
+  canary.utility.protobuf_shared_types.Variant value = 3; 
+  // The quality of the value.
+  int32 quality = 4; 
+  // The name of the property.
+  string name = 5; 
+  //The description of the property. This can be null.
+  google.protobuf.StringValue nullable_description = 6; 
+}
+
+/**
+* An element that is an annotation 
+*/
+message AnnotationElement {
+  // The ID of the tag that will have the annotation.
+  int32 tag_id = 1; 
+  // The timestamp for the annotation.
+  google.protobuf.Timestamp timestamp = 2;  
+  //The annotation itself.
+  canary.utility.protobuf_shared_types.Variant value = 3; 
+  // The timestamp of when the annotation is created. This is only needed if it is different than the annotation timestamp.
+  google.protobuf.Timestamp creation_timestamp = 4;
+  // The user who created the annotation.
+  string creation_user = 5; 
+}
+
+/**
+* An element that creates a new hdb file. 
+*/
+message FileNewElement {
+  // The name of the dataset that needs a file.
+  string data_set = 1; 
+  // The timestamp in the file for the dataset.
+  google.protobuf.Timestamp file_time = 2; 
+}
+
+/** 
+* An element that causes a file rollover to occur.
+*/
+message FileRolloverElement {
+  // The name of the dataset that needs a file rollover.
+  string data_set = 1; 
+  // The timestamp in the file for the dataset.
+  google.protobuf.Timestamp file_time = 2; 
+}
+
+/**
+* An element to obsolete a tag. This will cause the tag to be invissible in the Historian and will not appear in new HBD files. 
+*/
+message TagObsoleteElement {
+  // The path of the tag to obsolete.
+  string tag_path = 1; 
+}
+
+/**
+* An element to unobsolete a tag. This will cause the tag to be vissible in the Historian and appear in HBD files. 
+*/
+message TagUnobsoleteElement {
+  // The path of the tag to unobsolete.
+  string tag_path = 1; 
+}
+
+/**
+* An element that will rename a tag based off the behavior selected for it. 
+*/
+message TagRenameElement {
+  // The original tag path for the tag to be renamed.
+  string old_tag_path = 1;
+  // The new tag path for the tag to be renamed to. 
+  string new_tag_path = 2; 
+  // The hdb file for the dataset containing that tag.
+  string hdb_file = 3; 
+  // The rename behavior for the tag.
+  TagRenameBehavior behavior = 4; 
+}
+
+/**
+* An element that will release a tag.
+*/
+message TagReleaseElement {
+  // The ID of the tag to be released.
+  int32 tag_id = 1; 
+}
+
+/**
+* An enum for handling the various behaviors the tag rename can handle.
+*/
+enum TagRenameBehavior {
+  // The rename behavior is not a known and expected behavior
+  TAG_RENAME_BEHAVIOR_UNKNOWN = 0; 
+  // Only the file passed in to the request should have the tag be renamed
+  TAG_RENAME_BEHAVIOR_FILE_ONLY = 1; 
+  // All files containing the tag should have the tag be renamed
+  TAG_RENAME_BEHAVIOR_ALL_FILES = 2; 
+  // Only the specified file and any older than it should have the tag be renamed
+  TAG_RENAME_BEHAVIOR_FILE_AND_OLDER = 3; 
+  // Only the specified file and any newer than it should have the tag be renamed
+  TAG_RENAME_BEHAVIOR_FILE_AND_NEWER = 4; 
+}
+
+/**
+* The response to a write request. 
+*/
+message WriteResponse {
+  // The status in the form of the Response Status enum. 
+  ResponseStatus status = 1; 
+  // A value containing the error if any occured. This can be null. An error would mean the write failed. 
+  google.protobuf.StringValue nullable_error = 2; 
+}
+
+/*** DIODE MESSAGE SERIALIZATION (Internal Use Only) ***/
+
+/**
+* exclude-from-docs
+* For internal use only. A request to a Diode to either write data, keep the session alive, or close the session.
+*/
+message DiodeRequest {
+   // The ID for the session sequence.
+  uint64 session_sequence_id = 1; 
+  //The context for opening the session.
+  OpenSessionRequest session_context = 2; 
+  //The settings to configure for the session.
+  ConfigureSettingsRequest settings_context = 3; 
+  // The configured tags for the session.
+  repeated ConfigureTagPair tags_context = 4; 
+  // The diode message context which determines what of 3 actions the request does.
+  DiodeMessageContext message_context = 5; 
+}
+
+/**
+* exclude-from-docs
+* For internal use only. The context of the diode message which determines which action the request does: write, keep alive, or close the session.
+*/
+message DiodeMessageContext {
+  oneof context {
+    // The request to write data to the diode session.
+    WriteRequest write = 1; 
+    // The request to keep the diode session alive.
+    KeepAliveRequest keep_alive = 2; 
+    // The request to close the diode session.
+    CloseSessionRequest close_session = 3; 
+  }
+}
+
+/*** HISTORIAN INTERACTION ***/
+
+/**
+* A request to the Historian to get datasets.
+*/
+message GetDatasetsRequest {
+  // The context of the api token needed to connect to the Historian.
+  ApiAccessTokenContext api_access_token_context = 1; 
+}
+
+/**
+* The response from the Historian when getting datasets.
+*/
+message GetDatasetsResponse {
+  // The status in the form of the Response Status enum. 
+  ResponseStatus status = 1; 
+  // The datasets recieved.
+  repeated string datasets = 2; 
+  // A value containing the error if any occured. This can be null. An error would mean it failed.
+  string nullable_error = 3; 
+}

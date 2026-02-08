@@ -1,0 +1,25 @@
+﻿syntax = "proto3";
+
+package canary.utility.protobuf_shared_types;
+
+// REFERENCE: https://docs.microsoft.com/en-us/dotnet/architecture/grpc-for-wcf-developers/protobuf-data-types
+message Variant {
+  oneof kind {
+    bool bool = 1;
+    int32 int8 = 2;
+    int32 int16 = 3;
+    int32 int32 = 4;
+    int64 int64 = 5;
+    uint32 u_int8 = 6;
+    uint32 u_int16 = 7;
+    uint32 u_int32 = 8;
+    uint64 u_int64 = 9;
+    float float = 10;
+    double double = 11;
+    string string = 12;
+    bytes decimal = 13;
+    // TODO: add these types and decimal type as well
+    //google.protobuf.Duration duration = 14;
+    //google.protobuf.Timestamp timestamp = 15;
+  }
+}

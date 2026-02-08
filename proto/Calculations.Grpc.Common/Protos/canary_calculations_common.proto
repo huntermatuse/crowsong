@@ -1,0 +1,51 @@
+﻿syntax = "proto3";
+
+package canary.calculations.grpc.common;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+import "Utility.ProtobufSharedTypes/Protos/variant.proto";
+
+message FindEventsRequest {
+  map<string, string> search_criteria = 1;
+  bytes continuation_point = 2;
+}
+
+message FindEventsResponse {
+  repeated Event events = 1;
+  bytes continuation_point = 2;
+}
+
+message EventProperty {
+  int64 id = 1;
+  string name = 2;
+  string equation = 3;
+  canary.utility.protobuf_shared_types.Variant value = 4;
+}
+
+message Event {
+  int64 id = 1;
+  string hash = 2;
+  string calculation_name = 3;
+  google.protobuf.Timestamp starts_at = 4;
+  google.protobuf.Timestamp ends_at = 5;
+  google.protobuf.Duration duration = 6;
+  string asset_base_path = 7;
+  string notify_email = 8;
+  repeated EventProperty properties = 9;
+  bool is_below_min_duration = 10;
+  reserved 11;
+  google.protobuf.Duration start_trigger_offset = 12;
+  google.protobuf.Duration end_trigger_offset = 13;
+  string name = 14;
+  BatchEventStatus status = 15;
+}
+
+enum BatchEventStatus {
+	BATCH_EVENT_STATUS_UNSPECIFIED = 0;
+	BATCH_EVENT_STATUS_ACTIVE = 1;
+	BATCH_EVENT_STATUS_COMPLETED = 2;
+	BATCH_EVENT_STATUS_ABORTED = 3;
+}
