@@ -5,7 +5,7 @@ build-backend = "maturin"
 [project]
 name = "crowsong"
 version = "0.1.0"
-description = "Python client library for Canary Views gRPC API (powered by Rust)"
+description = "Python client library for Canary Views gRPC API"
 requires-python = ">=3.8"
 license = "MIT"
 authors = [
