@@ -1,0 +1,6 @@
+/target
+.env
+.venv
+# macos
+.DS_Store
+__MACOSX/
